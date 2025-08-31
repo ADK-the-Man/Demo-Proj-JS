@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-test:
-    name: Build & Test (${{ matrix.project }}) #Setting name for each Build appended by dyanamic name coming from matrix
+    name: Build & Test (${{ matrix.project }}) #Setting name for each Build appended by dynamic name coming from matrix
     runs-on: ubuntu-latest  #Each job runs on a fresh Ubuntu runner
     strategy:
       matrix:
@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 18    # This will install Node.js 18.x for both the jobs
           cache: npm          # Caches the dependencies for faster builds
-          cache-dependency-path: ${{ matrix.project }}/package-lock.json  # path to deps
+          cache-dependency-path: ${{ matrix.project }}/package.json  # path to deps
 
       - name: Install deps
         working-directory: ${{ matrix.project }}
@@ -44,3 +44,4 @@ jobs:
         with:
           name: frontend-build
           path: frontend/build   # This will be saved for later jobs (like CD)
+
