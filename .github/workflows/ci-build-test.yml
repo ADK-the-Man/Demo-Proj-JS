@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: 18    # This will install Node.js 18.x for both the jobs
           cache: npm          # Caches the dependencies for faster builds
-          cache-dependency-path: ${{ matrix.project }}/package.json  # path to deps
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json  # path to deps
 
       - name: Install deps
         working-directory: ${{ matrix.project }}
@@ -35,7 +35,7 @@ jobs:
         run: npm test --if-present  # if test cases are there -- test the code
 
       - name: Build (frontend only)
-        if: matrix.service == 'frontend'   # Asking that to run this step only in the frontend job
+        if: matrix.project == 'frontend'   # Asking that to run this step only in the frontend job
         working-directory: frontend
         run: npm run build
 
