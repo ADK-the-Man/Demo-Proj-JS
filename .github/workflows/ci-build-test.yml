@@ -1,4 +1,5 @@
-name: CI - Build & Test Pipeline
+
+name: CI Build & Test Pipeline 
 
 on:
   push:
@@ -8,8 +9,39 @@ on:
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest
+    name: Build & Test (${{ matrix.project }}) #Setting name for each Build appended by dynamic name coming from matrix
+    runs-on: ubuntu-latest  #Each job runs on a fresh Ubuntu runner
     strategy:
       matrix:
-        project: [backend, frontend]
-    
+        project: [backend, frontend] # Triggers two jobs -- one for frontend, the other for backend
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4 #Pulls your repo into the runner
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4  # To set up the Node in your runner
+        with:
+          node-version: 18    # This will install Node.js 18.x for both the jobs
+          cache: npm          # Caches the dependencies for faster builds
+          cache-dependency-path: ${{ matrix.project }}/package.json  # path to deps
+
+      - name: Install deps
+        working-directory: ${{ matrix.project }}
+        run: npm ci    # Just like maven -- cleans and installs deps
+
+      - name: Run tests
+        working-directory: ${{ matrix.project }}
+        run: npm test --if-present  # if test cases are there -- test the code
+
+      - name: Build (frontend only)
+        if: matrix.service == 'frontend'   # Asking that to run this step only in the frontend job
+        working-directory: frontend
+        run: npm run build
+
+      - name: Upload frontend build artifact
+        if: matrix.project == 'frontend'   # As frontend code needs to be built, asking only to upload the frontend build
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build   # This will be saved for later jobs (like CD)
