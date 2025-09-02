@@ -4,11 +4,16 @@ name: CI Build & Test Pipeline
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+    - '.github/workflows/ci-build-test.yml'
+    
   pull_request:
     branches: [ main ]
 
+
 jobs:
   build-test:
+    environment: development
     name: Build & Test (${{ matrix.project }}) #Setting name for each Build appended by dynamic name coming from matrix
     runs-on: ubuntu-latest  #Each job runs on a fresh Ubuntu runner
     strategy:
@@ -39,9 +44,18 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Upload frontend build artifact
-        if: matrix.project == 'frontend'   # As frontend code needs to be built, asking only to upload the frontend build
-        uses: actions/upload-artifact@v4
+      - name: Configure-AWS-Credentials
+        if: matrix.project == 'frontend'
+        uses: aws-actions/configure-aws-credentials@v4.3.1
         with:
-          name: frontend-build
-          path: frontend/build   # This will be saved for later jobs (like CD)
+          aws-region: ${{ vars.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY}}
+          
+  
+      # - name: Upload frontend build artifact
+      #   if: matrix.project == 'frontend'   # As frontend code needs to be built, asking only to upload the frontend build
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: frontend-build
+      #     path: frontend/build   # This will be saved for later jobs (like CD)
