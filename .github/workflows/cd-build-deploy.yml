@@ -1,0 +1,34 @@
+name: CD Build & Deploy Pipeline
+
+on:
+    workflow_run:
+        workflows: ["CI Build & Test Pipeline"]
+        types:
+            - completed
+
+jobs:
+    deploy:
+        runs-on: ubuntu
+        if: ${{ github.event.workflow_run.conclusion == 'success'}}
+
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+        
+            - name: Configure-AWS-Credentials # Configure AWS Credentials
+              uses: aws-actions/configure-aws-credentials@v4.3.1
+              with:
+                aws-region: ${{ vars.AWS_REGION }}
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY}}
+            
+    # build-docker-image:
+    #     runs-on: ubuntu
+
+    #     steps:
+    #         - name: Build Docker images
+    #           run: |
+    #             docker build -t frontend ./frontend
+    #             docker built -t backend ./backend
+        
+            
