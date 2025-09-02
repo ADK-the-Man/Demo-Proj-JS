@@ -4,9 +4,8 @@ name: CI Build & Test Pipeline
 on:
   push:
     branches: [ main ]
-    paths-ignore:
-    - '.github/workflows/ci-build-test.yml'
-    
+    # paths-ignore:
+    # - '.github/workflows/ci-build-test.yml'
   pull_request:
     branches: [ main ]
 
@@ -44,7 +43,7 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Configure-AWS-Credentials
+      - name: Configure-AWS-Credentials # Configure AWS Credentials
         if: matrix.project == 'frontend'
         uses: aws-actions/configure-aws-credentials@v4.3.1
         with:
@@ -52,7 +51,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY}}
           
-  
+      - name: Upload frontend build to S3  # Uploading Frontend builds to S3
+        if: matrix.project == 'frontend'
+        run: aws s3 sync frontend/build s3://${{ secrets.S3_BUCKET }}/builds --delete
+          
+      # Uploading normally to the Github Arifacts page and to enable the CD workflow to access the artifacts
       # - name: Upload frontend build artifact
       #   if: matrix.project == 'frontend'   # As frontend code needs to be built, asking only to upload the frontend build
       #   uses: actions/upload-artifact@v4
